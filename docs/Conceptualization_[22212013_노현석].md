@@ -1,6 +1,6 @@
 # SpenDiary
 
-![프로젝트 이미지](./images/Spendiary_logo.png)
+![프로젝트 이미지](../images/Spendiary_logo.png)
 
 | Student No | 22212013 |
 | :---: | :---: |
@@ -60,7 +60,7 @@
 
 ## 2. System Context Diagram
 
-![Context Diagram](./images/context_diagram.png)
+![Context Diagram](../images/context_diagram.png)
 
 - Register : 회원가입  
 - Login : 로그인  
