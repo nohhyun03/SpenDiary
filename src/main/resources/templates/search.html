@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpenDiary - 검색</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+        header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .logo { font-size: 22px; font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .logo span { color: #27ae60; }
+
+        .nav-links a { margin-left: 20px; text-decoration: none; color: #7f8c8d; font-weight: bold; }
+        .nav-links a:hover { color: #2c3e50; }
+
+        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+
+        .search-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .search-bar { display: flex; gap: 10px; }
+        .search-bar select { padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; outline: none; width: 150px; }
+        .search-bar input { flex: 1; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; outline: none; font-size: 15px; }
+        .btn-search { padding: 0 30px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-search:hover { background-color: #219653; }
+
+        .result-info { margin-bottom: 15px; color: #7f8c8d; font-size: 14px; }
+        .result-info strong { color: #2c3e50; }
+
+        .result-list { background: white; border-radius: 12px; padding: 10px 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f4f7f6; }
+        .transaction-item:last-child { border-bottom: none; }
+        .trans-date { width: 100px; font-size: 14px; color: #7f8c8d; font-weight: bold; }
+        .trans-info { flex: 1; min-width: 0; padding-right: 15px; }
+        .trans-info .cat { font-size: 12px; background: #ecf0f1; padding: 3px 8px; border-radius: 4px; color: #7f8c8d; margin-right: 10px; }
+        .trans-info .comment { font-size: 15px; color: #2c3e50; font-weight: bold; display: inline-block; margin: 0; }
+        .trans-title { display: flex; align-items: center; margin-bottom: 4px; }
+        .trans-memo {
+            font-size: 12px; color: #95a5a6; margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .highlight { background-color: #f1c40f; color: #000; padding: 0 2px; border-radius: 2px; }
+
+        .amount-and-actions { display: flex; align-items: center; gap: 15px; }
+        .trans-actions { display: flex; gap: 5px; }
+        .btn-edit, .btn-delete {
+            background: none; border: 1px solid #bdc3c7; border-radius: 4px;
+            padding: 4px 8px; font-size: 12px; color: #7f8c8d;
+            cursor: pointer; text-decoration: none;
+        }
+        .btn-edit:hover { background-color: #34495e; color: white; border-color: #34495e; }
+        .btn-delete:hover { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+
+        .trans-amount { font-weight: bold; font-size: 16px; }
+        .text-red { color: #e74c3c; }
+        .text-blue { color: #3498db; }
+
+        .transaction-scroll-box {
+            max-height: 640px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a th:href="@{/}" class="logo">Spen<span>Diary</span></a>
+    <div class="nav-links">
+        <a th:href="@{/category/manage}">카테고리 설정</a>
+        <a th:href="@{/statistics}">기간별 조회</a>
+        <a th:href="@{/search}" style="color: #27ae60;">검색</a>
+        <form th:action="@{/user/logout}" method="post" style="display:inline;" onsubmit="return confirm('정말 로그아웃 하시겠습니까?');">
+            <button type="submit" style="background: none; border: none; color: #7f8c8d; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin-left: 20px; font-family: inherit;" onmouseover="this.style.color='#2c3e50'" onmouseout="this.style.color='#7f8c8d'">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<div class="container">
+    <div class="search-container">
+        <form class="search-bar" th:action="@{/search}" method="get">
+
+            <select name="categoryId">
+                <option value="">전체 카테고리</option>
+
+                <optgroup label="[ 지출 ]">
+                    <option th:each="cat : ${expenseCategories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.name}"
+                            th:selected="${cat.id == selectedCategoryId}">식비</option>
+                </optgroup>
+
+                <optgroup label="[ 수입 ]">
+                    <option th:each="cat : ${incomeCategories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.name}"
+                            th:selected="${cat.id == selectedCategoryId}">월급</option>
+                </optgroup>
+            </select>
+
+            <input type="text" name="keyword" placeholder="검색할 코멘트나 일기 내용을 입력하세요" th:value="${keyword}">
+
+            <button type="submit" class="btn-search">검색</button>
+        </form>
+    </div>
+
+    <div class="result-info" th:if="${searchResults != null}">
+        <span th:if="${keyword != null and keyword != ''}">'<strong id="search-keyword" th:text="${keyword}">돈가스</strong>'에 대한 </span>
+        검색 결과 총 <strong th:text="${searchResults.size()}">1</strong>건
+    </div>
+
+    <div class="result-list" th:if="${searchResults != null}">
+
+        <div th:if="${searchResults.isEmpty()}" style="text-align: center; padding: 30px; color: #7f8c8d;">
+            조건에 맞는 내역이 없습니다.
+        </div>
+
+        <div class="transaction-scroll-box">
+            <div class="transaction-item" th:each="tx : ${searchResults}">
+                <div class="trans-date" th:text="${#temporals.format(tx.transactionDate, 'yyyy.MM.dd')}">2026.05.07
+                </div>
+
+                <div class="trans-info">
+                    <div class="trans-title">
+                        <span class="cat" th:text="${tx.category.name}">식비</span>
+
+                        <p class="comment target-text" th:text="${tx.content}">저녁 식사</p>
+                    </div>
+
+                    <p class="trans-memo target-text" th:if="${tx.memo != null and tx.memo != ''}" th:text="${tx.memo}">
+                        길어지는 메모 내용이 이곳에 표시됩니다...
+                    </p>
+                </div>
+
+                <div class="amount-and-actions">
+                    <div class="trans-amount"
+                         th:classappend="${tx.type.name() == 'EXPENSE'} ? 'text-red' : 'text-blue'"
+                         th:text="${tx.type.name() == 'EXPENSE' ? '- ' : '+ '} + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">
+                        - 12,000원
+                    </div>
+
+                    <div class="trans-actions">
+                        <a th:href="@{/transaction/update/{id}(id=${tx.id})}" class="btn-edit">수정</a>
+
+                        <form th:action="@{/transaction/delete/{id}(id=${tx.id})}" method="post" style="margin: 0;"
+                              onsubmit="return confirm('정말 이 내역을 삭제하시겠습니까?');">
+                            <button type="submit" class="btn-delete">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:if="${keyword != null and keyword != ''}">
+    document.addEventListener("DOMContentLoaded", function() {
+        const keyword = document.getElementById('search-keyword').innerText;
+        const targetTexts = document.querySelectorAll('.target-text');
+
+        if (keyword.trim() !== '') {
+            const regex = new RegExp(`(${keyword})`, 'gi');
+            targetTexts.forEach(el => {
+                el.innerHTML = el.innerHTML.replace(regex, '<span class="highlight">$1</span>');
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

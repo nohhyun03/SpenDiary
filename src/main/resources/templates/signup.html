@@ -1,98 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SpenDiary 회원가입</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpenDiary - 회원가입</title>
     <style>
-        body {
-            margin: 0;
-            font-family: "Malgun Gothic", sans-serif;
-            background: #f6f7f9;
-            color: #20242a;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .register-container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
-        main {
-            max-width: 420px;
-            margin: 72px auto;
-            padding: 32px;
-            background: #ffffff;
-            border: 1px solid #e1e5ea;
-            border-radius: 8px;
-        }
+        .logo { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 30px; display: inline-block; text-decoration: none; }
+        .logo span { color: #27ae60; }
 
-        h1 {
-            margin: 0 0 24px;
-            font-size: 28px;
-        }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 13px; color: #7f8c8d; margin-bottom: 8px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s; }
+        .input-group input:focus { border-color: #27ae60; }
 
-        label {
-            display: block;
-            margin: 16px 0 6px;
-            font-weight: 700;
-        }
+        .input-with-btn { display: flex; gap: 10px; }
+        .input-with-btn input { flex: 1; }
+        .btn-check { padding: 0 15px; background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .btn-check:hover { background-color: #bdc3c7; }
 
-        input {
-            box-sizing: border-box;
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cfd6df;
-            border-radius: 6px;
-            font-size: 15px;
-        }
+        .action-btns { display: flex; gap: 10px; margin-top: 30px; }
+        .btn-register { flex: 2; padding: 14px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-register:hover { background-color: #219653; }
+        .btn-cancel { flex: 1; padding: 14px; background-color: #ecf0f1; color: #7f8c8d; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.3s; }
+        .btn-cancel:hover { background-color: #bdc3c7; color: #2c3e50; }
 
-        button, a.button {
-            display: inline-block;
-            margin-top: 22px;
-            padding: 11px 16px;
-            border: 0;
-            border-radius: 6px;
-            background: #1f6feb;
-            color: #ffffff;
-            font-size: 15px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        a {
-            color: #1f6feb;
-        }
-
-        .message {
-            margin: 14px 0;
-            padding: 12px;
-            border-radius: 6px;
-        }
-
-        .error {
-            background: #fff1f0;
-            color: #b42318;
-        }
+        .login-link { margin-top: 20px; font-size: 14px; color: #7f8c8d; }
+        .login-link a { color: #27ae60; text-decoration: none; font-weight: bold; }
+        .login-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-<main>
-    <h1>회원가입</h1>
 
-    <div class="message error" th:if="${error}" th:text="${error}">회원가입 오류</div>
+<div class="register-container">
+    <a th:href="@{/user/login}" class="logo">Spen<span>Diary</span></a>
 
-    <form action="/user/signup" method="post">
-        <label for="loginId">아이디</label>
-        <input id="loginId" name="loginId" type="text" required maxlength="30">
+    <form th:action="@{/user/signup}" method="post" onsubmit="return validateForm()">
+        <div class="input-group">
+            <label for="name">이름</label>
+            <input type="text" id="name" name="name" placeholder="실명을 입력하세요" required>
+        </div>
 
-        <label for="name">이름</label>
-        <input id="name" name="name" type="text" required maxlength="20">
+        <div class="input-group">
+            <label for="loginId">아이디</label>
+            <div class="input-with-btn">
+                <input type="text" id="loginId" name="loginId" placeholder="사용할 아이디를 입력하세요"
+                       required oninput="resetIdCheck()">
+                <button type="button" class="btn-check" onclick="checkDuplicateId()">중복확인</button>
+            </div>
+            <span id="id-check-msg" style="font-size: 12px; margin-top: 5px; display: block; font-weight: bold;"></span>
+            <input type="hidden" id="isIdChecked" value="false">
+        </div>
 
-        <label for="password">비밀번호</label>
-        <input id="password" name="password" type="password" required>
+        <div class="input-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요"
+                   required oninput="checkPasswordMatch()">
+        </div>
 
-        <label for="passwordConfirm">비밀번호 확인</label>
-        <input id="passwordConfirm" name="passwordConfirm" type="password" required>
+        <div class="input-group">
+            <label for="passwordConfirm">비밀번호 확인</label>
+            <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호를 다시 입력하세요"
+                   required oninput="checkPasswordMatch()">
 
-        <button type="submit">가입하기</button>
+            <span id="pw-check-msg" style="font-size: 12px; margin-top: 5px; display: block; font-weight: bold;"></span>
+        </div>
+
+        <div class="action-btns">
+            <a th:href="@{/user/login}" class="btn-cancel">취소</a>
+            <button type="submit" class="btn-register">가입완료</button>
+        </div>
     </form>
+    <div class="login-link">
+        이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인하기</a>
+    </div>
+</div>
+<script>
+    function checkDuplicateId() {
+        const loginId = document.getElementById('loginId').value;
+        const msgElement = document.getElementById('id-check-msg');
+        const isIdChecked = document.getElementById('isIdChecked');
 
-    <p>이미 계정이 있나요? <a href="/user/login">로그인</a></p>
-</main>
+        if (loginId.trim() === '') {
+            msgElement.textContent = '아이디를 먼저 입력해주세요.';
+            msgElement.style.color = '#e74c3c';
+            return;
+        }
+
+        fetch(`/user/check-id?loginId=${loginId}`)
+            .then(response => response.json())
+            .then(isDuplicated => {
+                if (isDuplicated) {
+                    msgElement.textContent = '이미 사용 중인 아이디입니다.';
+                    msgElement.style.color = '#e74c3c';
+                    isIdChecked.value = 'false';
+                } else {
+                    msgElement.textContent = '사용 가능한 아이디입니다!';
+                    msgElement.style.color = '#27ae60';
+                    isIdChecked.value = 'true';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('중복 확인 중 오류가 발생했습니다.');
+            });
+    }
+
+    function resetIdCheck() {
+        document.getElementById('isIdChecked').value = 'false';
+        document.getElementById('id-check-msg').textContent = '';
+    }
+
+    function checkPasswordMatch() {
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordConfirm').value;
+        const msgElement = document.getElementById('pw-check-msg');
+
+        if (passwordConfirm === '') {
+            msgElement.textContent = '';
+            return;
+        }
+
+        if (password === passwordConfirm) {
+            msgElement.textContent = '비밀번호가 일치합니다.';
+            msgElement.style.color = '#27ae60';
+        } else {
+            msgElement.textContent = '비밀번호가 일치하지 않습니다.';
+            msgElement.style.color = '#e74c3c';
+        }
+    }
+
+    function validateForm() {
+        const isIdChecked = document.getElementById('isIdChecked').value;
+        if (isIdChecked === 'false') {
+            alert('아이디 중복확인을 완료해주세요.');
+            document.getElementById('loginId').focus();
+            return false;
+        }
+
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('passwordConfirm').value;
+        if (password !== passwordConfirm) {
+            alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+            document.getElementById('passwordConfirm').focus();
+            return false;
+        }
+
+        return true;
+    }
+</script>
 </body>
 </html>

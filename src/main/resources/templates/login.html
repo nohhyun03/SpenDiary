@@ -1,99 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SpenDiary 로그인</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpenDiary - 로그인</title>
     <style>
-        body {
-            margin: 0;
-            font-family: "Malgun Gothic", sans-serif;
-            background: #f6f7f9;
-            color: #20242a;
-        }
-
-        main {
-            max-width: 420px;
-            margin: 72px auto;
-            padding: 32px;
-            background: #ffffff;
-            border: 1px solid #e1e5ea;
-            border-radius: 8px;
-        }
-
-        h1 {
-            margin: 0 0 24px;
-            font-size: 28px;
-        }
-
-        label {
-            display: block;
-            margin: 16px 0 6px;
-            font-weight: 700;
-        }
-
-        input {
-            box-sizing: border-box;
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cfd6df;
-            border-radius: 6px;
-            font-size: 15px;
-        }
-
-        button, a.button {
-            display: inline-block;
-            margin-top: 22px;
-            padding: 11px 16px;
-            border: 0;
-            border-radius: 6px;
-            background: #1f6feb;
-            color: #ffffff;
-            font-size: 15px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        a {
-            color: #1f6feb;
-        }
-
-        .message {
-            margin: 14px 0;
-            padding: 12px;
-            border-radius: 6px;
-        }
-
-        .success {
-            background: #ecfdf3;
-            color: #027a48;
-        }
-
-        .error {
-            background: #fff1f0;
-            color: #b42318;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+        .logo { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 30px; }
+        .logo span { color: #27ae60; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 8px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #27ae60; }
+        .btn-login { width: 100%; padding: 14px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-login:hover { background-color: #219653; }
+        .register-link { margin-top: 20px; font-size: 14px; color: #7f8c8d; }
+        .register-link a { color: #27ae60; text-decoration: none; font-weight: bold; }
+        .register-link a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-<main>
-    <h1>로그인</h1>
 
-    <div class="message success" th:if="${successMessage}" th:text="${successMessage}">처리 완료</div>
-    <div class="message error" th:if="${error}" th:text="${error}">로그인 오류</div>
-    <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}">입력 오류</div>
+<div class="login-container">
+    <div class="logo">Spen<span>Diary</span></div>
 
-    <form action="/user/login" method="post">
-        <label for="loginId">아이디</label>
-        <input id="loginId" name="loginId" type="text" required>
+    <div th:if="${error}" th:text="${error}" style="color: #e74c3c; font-size: 14px; margin-bottom: 15px; font-weight: bold;"></div>
 
-        <label for="password">비밀번호</label>
-        <input id="password" name="password" type="password" required>
+    <form th:action="@{/user/login}" method="post">
+        <div class="input-group">
+            <label for="loginId">아이디</label>
+            <input type="text" id="loginId" name="loginId" placeholder="아이디를 입력하세요" required>
+        </div>
 
-        <button type="submit">로그인</button>
+        <div class="input-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+        </div>
+        <button type="submit" class="btn-login">로그인</button>
     </form>
-
-    <p>계정이 없나요? <a href="/user/signup">회원가입</a></p>
-</main>
+    <div class="register-link">
+        계정이 없으신가요? <a th:href="@{/user/signup}">회원가입</a>
+    </div>
+</div>
+<script th:if="${successMessage}">
+    alert("[[${successMessage}]]");
+</script>
 </body>
 </html>

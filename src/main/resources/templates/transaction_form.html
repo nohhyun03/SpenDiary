@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${transaction != null ? 'SpenDiary - 내역 수정' : 'SpenDiary - 내역 기록'}">SpenDiary - 내역 기록</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+
+        header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .logo span { color: #27ae60; }
+        .nav-links a, .nav-links button { margin-left: 20px; text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 16px; background: none; border: none; cursor: pointer; }
+        .nav-links a:hover, .nav-links button:hover { color: #2c3e50; }
+
+        .container { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 80px); padding: 20px; }
+        .form-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        .form-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px; }
+        .form-header h2 { margin: 0; color: #2c3e50; font-size: 20px; }
+
+        .type-toggle { display: flex; margin-bottom: 20px; gap: 10px; }
+        .type-toggle input[type="radio"] { display: none; }
+        .type-toggle label { flex: 1; text-align: center; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; cursor: pointer; color: #7f8c8d; font-weight: bold; transition: 0.2s; }
+        .type-toggle input[type="radio"]:checked + label.expense { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+        .type-toggle input[type="radio"]:checked + label.income { background-color: #3498db; color: white; border-color: #3498db; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 6px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: #27ae60; outline: none; }
+        .input-group textarea { resize: none; height: 70px; }
+
+        .action-btns { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-save { flex: 2; padding: 14px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s;}
+        .btn-save:hover { background-color: #219653; }
+        .btn-cancel { flex: 1; padding: 14px; background-color: #ecf0f1; color: #7f8c8d; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; transition: 0.3s;}
+        .btn-cancel:hover { background-color: #bdc3c7; color: #2c3e50;}
+    </style>
+</head>
+<body>
+
+<header>
+    <a th:href="@{/}" class="logo">Spen<span>Diary</span></a>
+    <div class="nav-links">
+        <a th:href="@{/category/manage}">카테고리 설정</a>
+        <a th:href="@{/statistics}">기간별 조회</a>
+        <a th:href="@{/search}">검색</a>
+        <form th:action="@{/user/logout}" method="post" style="display:inline;" onsubmit="return confirm('정말 로그아웃 하시겠습니까?');">
+            <button type="submit" style="background: none; border: none; color: #7f8c8d; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin-left: 20px; font-family: inherit;" onmouseover="this.style.color='#2c3e50'" onmouseout="this.style.color='#7f8c8d'">로그아웃</button>
+        </form>
+    </div>
+</header>
+
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h2 th:text="${transaction != null ? '내역 수정하기' : '내역 기록하기'}">내역 기록하기</h2>
+        </div>
+
+        <form th:action="${transaction != null ? '/transaction/update/' + transaction.id : '/transaction/create'}" method="post">
+
+            <div class="type-toggle">
+                <input type="radio" id="type_expense" name="type" value="EXPENSE"
+                       th:checked="${transaction == null or transaction.type.name() == 'EXPENSE'}">
+                <label for="type_expense" class="expense">지출</label>
+
+                <input type="radio" id="type_income" name="type" value="INCOME"
+                       th:checked="${transaction != null and transaction.type.name() == 'INCOME'}">
+                <label for="type_income" class="income">수입</label>
+            </div>
+
+            <div class="input-group">
+                <label>날짜</label>
+                <input type="date" name="transactionDate" required
+                       th:value="${transaction != null ? transaction.transactionDate : selectedDate}">
+            </div>
+
+            <div class="input-group">
+                <label>카테고리</label>
+                <select id="expense-category" name="categoryId"
+                        th:style="${transaction != null and transaction.type.name() == 'INCOME' ? 'display:none;' : ''}"
+                        th:disabled="${transaction != null and transaction.type.name() == 'INCOME'}">
+                    <option th:each="cat : ${expenseCategoryList}" th:value="${cat.id}" th:text="${cat.name}"
+                            th:selected="${transaction != null and transaction.category.id == cat.id}"></option>
+                </select>
+
+                <select id="income-category" name="categoryId"
+                        th:style="${transaction != null and transaction.type.name() == 'INCOME' ? '' : 'display:none;'}"
+                        th:disabled="${transaction == null or transaction.type.name() == 'EXPENSE'}">
+                    <option th:each="cat : ${incomeCategoryList}" th:value="${cat.id}" th:text="${cat.name}"
+                            th:selected="${transaction != null and transaction.category.id == cat.id}"></option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="content">내용 (항목명)</label>
+                <input type="text" id="content" name="content" placeholder="예: 점심 식사, 편의점" required
+                       th:value="${transaction != null ? transaction.content : ''}">
+            </div>
+
+            <div class="input-group">
+                <label for="amount">금액 (원)</label>
+                <input type="number" id="amount" name="amount" placeholder="금액을 입력하세요" required
+                       th:value="${transaction != null ? transaction.amount : ''}">
+            </div>
+
+            <div class="input-group">
+                <label for="memo">일기 (메모)</label>
+                <textarea id="memo" name="memo" placeholder="간단한 메모를 남겨보세요."
+                          th:text="${transaction != null ? transaction.memo : ''}"></textarea>
+            </div>
+
+            <div class="action-btns">
+                <a href="javascript:history.back();" class="btn-cancel">취소</a>
+                <button type="submit" class="btn-save" th:text="${transaction != null ? '수정하기' : '기록하기'}">기록하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const expenseRadio = document.getElementById('type_expense');
+    const incomeRadio = document.getElementById('type_income');
+    const expenseSelect = document.getElementById('expense-category');
+    const incomeSelect = document.getElementById('income-category');
+
+    function toggleCategory() {
+        if (expenseRadio.checked) {
+            expenseSelect.style.display = 'block';
+            expenseSelect.disabled = false;
+            incomeSelect.style.display = 'none';
+            incomeSelect.disabled = true;
+        } else {
+            incomeSelect.style.display = 'block';
+            incomeSelect.disabled = false;
+            expenseSelect.style.display = 'none';
+            expenseSelect.disabled = true;
+        }
+    }
+
+    expenseRadio.addEventListener('change', toggleCategory);
+    incomeRadio.addEventListener('change', toggleCategory);
+</script>
+
+</body>
+</html>

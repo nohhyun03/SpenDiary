@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpenDiary - 메인 달력</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+
+        header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .logo span { color: #27ae60; }
+
+        .nav-links a { margin-left: 20px; text-decoration: none; color: #7f8c8d; font-weight: bold; }
+        .nav-links a:hover { color: #2c3e50; }
+
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
+
+        .top-row { display: flex; gap: 20px; }
+
+        .calendar-section { flex: 1.5; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .month-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .month-header h2 { margin: 0; color: #2c3e50; }
+        .month-header button { border: none; background: #ecf0f1; padding: 5px 10px; border-radius: 4px; cursor: pointer; color: #2c3e50; font-weight: bold; }
+        .month-header button:hover { background: #bdc3c7; }
+
+        .summary { display: flex; gap: 10px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .summary div { flex: 1; text-align: center; border-right: 1px solid #ddd; }
+        .summary div:last-child { border-right: none; }
+        .summary span { display: block; font-size: 14px; color: #7f8c8d; margin-bottom: 5px; font-weight: bold; }
+        .summary strong { font-size: 16px; }
+        .text-blue { color: #3498db; }
+        .text-red { color: #e74c3c; }
+        .text-green { color: #27ae60; }
+
+        .mock-calendar { width: 100%; border-collapse: collapse; text-align: center; }
+        .mock-calendar th { color: #7f8c8d; padding: 10px; font-size: 14px; }
+        .mock-calendar td { padding: 15px; border: 1px solid #ecf0f1; cursor: pointer; border-radius: 4px; }
+        .mock-calendar td:hover { background-color: #f1f2f6; }
+        .active-day { background-color: #27ae60; color: white; }
+        .active-day:hover { background-color: #219653 !important; }
+
+        .details-section { flex: 1; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .details-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 15px; }
+        .details-header h3 { margin: 0; color: #2c3e50; font-size: 18px; }
+
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f4f7f6; }
+        .trans-info .cat { font-size: 11px; background: #ecf0f1; padding: 3px 6px; border-radius: 4px; color: #7f8c8d; margin-bottom: 5px; display: inline-block;}
+        .trans-info .title { font-size: 14px; color: #2c3e50; font-weight: bold; margin: 0; }
+        .trans-amount { font-weight: bold; font-size: 15px; }
+
+        .btn-add { display: block; width: 90%; padding: 15px; background-color: #27ae60; color: white; text-align: center; border-radius: 8px; font-weight: bold; text-decoration: none; margin-top: auto; transition: 0.3s; }
+        .btn-add:hover { background-color: #219653; }
+        .btn-action { font-size: 12px; color: #95a5a6; border: none; background: none; cursor: pointer; padding: 0 5px; }
+        .btn-action:hover { color: #2c3e50; }
+
+        .diary-section { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 10px; border-top: 5px solid #27ae60; }
+        .diary-header { margin-bottom: 20px; color: #2c3e50; font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+
+        .diary-card { background: #fdfdfd; border: 1px solid #ecf0f1; border-left: 4px solid #27ae60; border-radius: 8px; padding: 15px 20px; margin-bottom: 15px; }
+        .diary-card:last-child { margin-bottom: 0; }
+        .diary-meta { font-size: 13px; color: #7f8c8d; margin-bottom: 10px; font-weight: bold; }
+        .diary-meta span.cat { background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 8px; }
+        .diary-text { margin: 0; font-size: 15px; color: #34495e; line-height: 1.6; }
+
+        .diary-card.income-card { border-left-color: #3498db; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a th:href="@{/}" class="logo">Spen<span>Diary</span></a>
+    <div class="nav-links">
+        <a th:href="@{/category/manage}">카테고리 설정</a>
+        <a th:href="@{/statistics}">기간별 조회</a>
+        <a th:href="@{/search}">검색</a>
+        <form th:action="@{/user/logout}" method="post" style="display:inline;" onsubmit="return confirm('정말 로그아웃 하시겠습니까?');">
+            <button type="submit" style="background: none; border: none; color: #7f8c8d; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin-left: 20px; font-family: inherit;" onmouseover="this.style.color='#2c3e50'" onmouseout="this.style.color='#7f8c8d'">로그아웃</button>
+        </form>
+        <form th:action="@{/user/delete}" method="post" style="display:inline;" onsubmit="return confirm('정말 회원 탈퇴를 진행하시겠습니까?\n작성된 모든 가계부 내역과 카테고리가 영구적으로 삭제되며 복구할 수 없습니다.');">
+            <button type="submit" style="background: none; border: none; color: #7f8c8d; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin-left: 20px; font-family: inherit;" onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='#7f8c8d'">회원탈퇴</button>
+        </form>
+    </div>
+</header>
+
+<div class="container">
+    <div class="top-row">
+        <div class="calendar-section">
+            <div class="month-header">
+                <button th:onclick="|location.href='@{/(date=${prevMonth})}'|">&lt;</button>
+                <h2 th:text="${selectedDate.year} + '년 ' + ${selectedDate.monthValue} + '월'">2026년 5월</h2>
+                <button th:onclick="|location.href='@{/(date=${nextMonth})}'|">&gt;</button>
+            </div>
+
+            <div class="summary">
+                <div><span>총 수입</span><strong class="text-blue" th:text="'+ ' + ${#numbers.formatInteger(stats.totalIncome, 0, 'COMMA')} + '원'">+ 0원</strong></div>
+                <div><span>총 지출</span><strong class="text-red" th:text="'- ' + ${#numbers.formatInteger(stats.totalExpense, 0, 'COMMA')} + '원'">- 0원</strong></div>
+                <div><span>잔액</span><strong class="text-green" th:text="${stats.totalBalance > 0 ? '+ ' : ''} + ${#numbers.formatInteger(stats.totalBalance, 0, 'COMMA')} + '원'">0원</strong></div>
+            </div>
+
+            <table class="mock-calendar" style="table-layout: fixed; width: 100%; text-align: center;">
+                <tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
+
+                <tr th:each="weekIdx : ${#numbers.sequence(0, 5)}">
+
+                    <td th:each="dayIdx : ${#numbers.sequence(0, 6)}"
+                        th:with="calDay=${calendarList[weekIdx * 7 + dayIdx]}"
+                        th:classappend="${calDay.isSelected ? 'active-day' : ''}"
+                        th:onclick="|location.href='@{/(date=${calDay.date})}'|"
+                        style="vertical-align: top; height: 70px; padding: 4px; overflow: hidden; box-sizing: border-box;">
+
+                        <div th:text="${calDay.day}"
+                             th:style="${!calDay.isCurrentMonth ? 'color:#bdc3c7;' : 'font-weight:bold; margin-bottom: 3px;'}">1</div>
+
+                        <div th:if="${calDay.isHasData() and calDay.incomeAmount > 0}"
+                             style="font-size: 13px; letter-spacing: -0.5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                             th:styleappend="${calDay.isSelected ? 'color: white;' : 'color: #3498db;'}">
+                            + <span th:text="${#numbers.formatInteger(calDay.incomeAmount, 0, 'COMMA')}"></span>
+                        </div>
+
+                        <div th:if="${calDay.isHasData() and calDay.expenseAmount > 0}"
+                             style="font-size: 13px; letter-spacing: -0.5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                             th:styleappend="${calDay.isSelected ? 'color: white;' : 'color: #e74c3c;'}">
+                            - <span th:text="${#numbers.formatInteger(calDay.expenseAmount, 0, 'COMMA')}"></span>
+                        </div>
+
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="details-section">
+            <div class="details-header">
+                <h3 th:text="${selectedDate.monthValue} + '월 ' + ${selectedDate.dayOfMonth} + '일 내역'"></h3>
+            </div>
+
+            <div th:if="${#lists.isEmpty(transactions)}" style="text-align:center; color:#95a5a6; padding:20px 0;">
+                기록된 내역이 없습니다.
+            </div>
+
+            <div class="transaction-item" th:each="tx : ${transactions}">
+                <div class="trans-info">
+                    <span class="cat" th:text="${tx.category.name}">식비</span>
+                    <p class="title" th:text="${tx.content}">저녁 식사</p>
+                </div>
+                <div style="text-align: right;">
+                    <div class="trans-amount"
+                         th:classappend="${tx.type.name() == 'INCOME'} ? 'text-blue' : 'text-red'"
+                         th:text="${tx.type.name() == 'INCOME' ? '+ ' : '- '} + ${#numbers.formatInteger(tx.amount, 0, 'COMMA')} + '원'">
+                        - 12,000원
+                    </div>
+                    <div style="display: flex; gap: 5px; justify-content: flex-end; margin-top: 5px;">
+                        <button class="btn-action" th:onclick="|location.href='@{/transaction/update/{id}(id=${tx.id})}'|">수정</button>
+                        <form th:action="@{/transaction/delete/{id}(id=${tx.id})}" method="post" style="margin:0;">
+                            <button class="btn-action" type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <a th:href="@{/transaction/create(date=${selectedDate})}" class="btn-add">+ 내역 기록하기</a>
+        </div>
+    </div>
+
+    <div class="diary-section">
+        <div class="diary-header" th:text="'✍️ ' + ${selectedDate.monthValue} + '월 ' + ${selectedDate.dayOfMonth} + '일의 소비 일기'">
+            ✍️ 5월 7일의 소비 일기
+        </div>
+
+        <div th:if="${#lists.isEmpty(transactions)}" style="text-align:center; color:#95a5a6; padding:10px 0;">
+            작성된 일기가 없습니다.
+        </div>
+
+        <th:block th:each="tx : ${transactions}">
+            <div class="diary-card"
+                 th:if="${tx.memo != null and !tx.memo.isBlank()}"
+                 th:classappend="${tx.type.name() == 'INCOME'} ? 'income-card' : ''">
+                <div class="diary-meta">
+                    <span class="cat" th:text="${tx.category.name}">식비</span>
+                    <span th:text="${tx.content}">저녁 식사</span>
+                </div>
+                <p class="diary-text" th:text="${tx.memo}">일기 내용</p>
+            </div>
+        </th:block>
+    </div>
+
+</div>
+
+</body>
+</html>

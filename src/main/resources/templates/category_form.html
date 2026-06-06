@@ -1,182 +1,140 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SpenDiary 카테고리 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpenDiary - 카테고리 설정</title>
     <style>
-        body {
-            margin: 0;
-            font-family: "Malgun Gothic", sans-serif;
-            background: #f6f7f9;
-            color: #20242a;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+
+        header { background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .logo span { color: #27ae60; }
+
+        .nav-links a { margin-left: 20px; text-decoration: none; color: #7f8c8d; font-weight: bold; }
+        .nav-links a:hover { color: #2c3e50; }
+
+        .container { max-width: 900px; margin: 50px auto; padding: 0 20px; }
+        .category-columns { display: flex; gap: 30px; }
+
+        @media (max-width: 768px) {
+            .category-columns { flex-direction: column; }
         }
 
-        main {
-            max-width: 920px;
-            margin: 48px auto;
-            padding: 32px;
-            background: #ffffff;
-            border: 1px solid #e1e5ea;
-            border-radius: 8px;
-        }
+        .category-box { flex: 1; background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .category-box h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 25px; }
 
-        h1 {
-            margin: 0 0 24px;
-            font-size: 30px;
-        }
+        .expense-box h2 { color: #e74c3c; border-bottom-color: #fdf0ed; }
+        .income-box h2 { color: #3498db; border-bottom-color: #eaf4fc; }
 
-        h2 {
-            margin: 28px 0 12px;
-            font-size: 20px;
-        }
+        .add-category { display: flex; gap: 10px; margin-bottom: 30px; }
+        .add-category input { flex: 1; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; outline: none; }
+        .btn-add { padding: 0 20px; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
-        form {
-            margin: 0;
-        }
+        .expense-box .btn-add { background-color: #e74c3c; }
+        .expense-box .btn-add:hover { background-color: #c0392b; }
+        .expense-box .add-category input:focus { border-color: #e74c3c; }
 
-        .create-form {
-            display: grid;
-            grid-template-columns: 1fr 160px auto;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
+        .income-box .btn-add { background-color: #3498db; }
+        .income-box .btn-add:hover { background-color: #2980b9; }
+        .income-box .add-category input:focus { border-color: #3498db; }
 
-        input, select {
-            box-sizing: border-box;
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cfd6df;
-            border-radius: 6px;
-            font-size: 15px;
-        }
+        .category-list { list-style: none; padding: 0; margin: 0; }
+        .category-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #ecf0f1; }
+        .category-item:last-child { border-bottom: none; }
+        .cat-name { font-size: 16px; color: #2c3e50; font-weight: bold; }
 
-        button, a.button {
-            display: inline-block;
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 6px;
-            background: #1f6feb;
-            color: #ffffff;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        button.secondary {
-            background: #20242a;
-        }
-
-        button.danger {
-            background: #b42318;
-        }
-
-        .message {
-            margin: 14px 0;
-            padding: 12px;
-            border-radius: 6px;
-            background: #fff1f0;
-            color: #b42318;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        ul {
-            padding: 0;
-            list-style: none;
-        }
-
-        li {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #edf0f3;
-        }
-
-        .update-form {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-        }
-
-        .empty {
-            color: #667085;
-        }
-
-        .top-link {
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 720px) {
-            main {
-                margin: 24px 12px;
-                padding: 20px;
-            }
-
-            .create-form, .grid, li {
-                grid-template-columns: 1fr;
-            }
-        }
+        .cat-actions { display: flex; gap: 5px; }
+        .cat-actions button { background: none; border: 1px solid #bdc3c7; padding: 5px 10px; border-radius: 4px; color: #7f8c8d; cursor: pointer; transition: 0.2s; }
+        .cat-actions button:hover { background-color: #f4f7f6; color: #2c3e50; }
+        .cat-actions .btn-del:hover { background-color: #e74c3c; color: white; border-color: #e74c3c; }
     </style>
 </head>
 <body>
-<main>
-    <div class="top-link">
-        <a href="/">홈으로</a>
+
+<header>
+    <a th:href="@{/}" class="logo">Spen<span>Diary</span></a>
+    <div class="nav-links">
+        <a th:href="@{/category/manage}" style="color: #27ae60;">카테고리 설정</a>
+        <a th:href="@{/statistics}">기간별 조회</a>
+        <a th:href="@{/search}">검색</a>
+        <form th:action="@{/user/logout}" method="post" style="display:inline;" onsubmit="return confirm('정말 로그아웃 하시겠습니까?');">
+            <button type="submit" style="background: none; border: none; color: #7f8c8d; font-weight: bold; font-size: 16px; cursor: pointer; padding: 0; margin-left: 20px; font-family: inherit;" onmouseover="this.style.color='#2c3e50'" onmouseout="this.style.color='#7f8c8d'">로그아웃</button>
+        </form>
     </div>
+</header>
 
-    <h1>카테고리 관리</h1>
+<div class="container">
+    <div class="category-columns">
 
-    <div class="message" th:if="${error}" th:text="${error}">오류가 발생했습니다.</div>
-
-    <form class="create-form" action="/category/create" method="post">
-        <input name="name" type="text" placeholder="카테고리 이름" required>
-        <select name="type" required>
-            <option value="EXPENSE">지출</option>
-            <option value="INCOME">수입</option>
-        </select>
-        <button type="submit">추가</button>
-    </form>
-
-    <div class="grid">
-        <section>
+        <div class="category-box expense-box">
             <h2>지출 카테고리</h2>
-            <p class="empty" th:if="${#lists.isEmpty(expenseCategoryList)}">등록된 지출 카테고리가 없습니다.</p>
-            <ul>
-                <li th:each="category : ${expenseCategoryList}">
-                    <form class="update-form" th:action="@{/category/update/{id}(id=${category.id})}" method="post">
-                        <input name="name" type="text" th:value="${category.name}" required>
-                        <button class="secondary" type="submit">수정</button>
-                    </form>
-                    <form th:action="@{/category/delete/{id}(id=${category.id})}" method="post">
-                        <button class="danger" type="submit">삭제</button>
-                    </form>
-                </li>
-            </ul>
-        </section>
 
-        <section>
-            <h2>수입 카테고리</h2>
-            <p class="empty" th:if="${#lists.isEmpty(incomeCategoryList)}">등록된 수입 카테고리가 없습니다.</p>
-            <ul>
-                <li th:each="category : ${incomeCategoryList}">
-                    <form class="update-form" th:action="@{/category/update/{id}(id=${category.id})}" method="post">
-                        <input name="name" type="text" th:value="${category.name}" required>
-                        <button class="secondary" type="submit">수정</button>
-                    </form>
-                    <form th:action="@{/category/delete/{id}(id=${category.id})}" method="post">
-                        <button class="danger" type="submit">삭제</button>
-                    </form>
+            <form class="add-category" th:action="@{/category/create}" method="post">
+                <input type="hidden" name="type" value="EXPENSE">
+
+                <input type="text" name="name" placeholder="새로운 지출 카테고리 이름" required>
+                <button type="submit" class="btn-add">추가</button>
+            </form>
+
+            <ul class="category-list">
+                <li class="category-item" th:each="cat : ${expenseCategoryList}">
+                    <span class="cat-name" th:text="${cat.name}">식비</span>
+                    <div class="cat-actions" th:if="${!cat.isDefault}">
+                        <button type="button" th:onclick="updateCategory([[${cat.id}]], [[${cat.name}]])">수정</button>
+                        <form th:action="@{/category/delete/{id}(id=${cat.id})}" method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="btn-del" onclick="return confirm('정말 이 카테고리를 삭제하시겠습니까?\n삭제 후 관련 가계부 내역은 \'미분류\' 카테고리로 안전하게 이동됩니다.');">삭제</button>
+                        </form>
+                    </div>
                 </li>
             </ul>
-        </section>
+        </div>
+
+        <div class="category-box income-box">
+            <h2>수입 카테고리</h2>
+
+            <form class="add-category" th:action="@{/category/create}" method="post">
+                <input type="hidden" name="type" value="INCOME">
+
+                <input type="text" name="name" placeholder="새로운 수입 카테고리 이름" required>
+                <button type="submit" class="btn-add">추가</button>
+            </form>
+
+            <ul class="category-list">
+                <li class="category-item" th:each="cat : ${incomeCategoryList}">
+                    <span class="cat-name" th:text="${cat.name}">용돈</span>
+                    <div class="cat-actions" th:if="${!cat.isDefault}">
+
+                        <button type="button" th:onclick="updateCategory([[${cat.id}]], [[${cat.name}]])">수정</button>
+
+                        <form th:action="@{/category/delete/{id}(id=${cat.id})}" method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="btn-del" onclick="return confirm('정말 이 카테고리를 삭제하시겠습니까? 관련 내역이 있다면 문제가 생길 수 있습니다.');">삭제</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
-</main>
+</div>
+<form id="updateForm" method="post" style="display:none;">
+    <input type="hidden" name="name" id="updateNameInput">
+</form>
+
+
+<script th:if="${error}">
+    alert("[[${error}]]");
+</script>
+<script>
+    function updateCategory(categoryId, currentName) {
+        const newName = prompt("새로운 카테고리 이름을 입력하세요.", currentName);
+        if (newName != null && newName.trim() !== "" && newName !== currentName) {
+            const form = document.getElementById('updateForm');
+            form.action = '/category/update/' + categoryId;
+            document.getElementById('updateNameInput').value = newName.trim();
+            form.submit();
+        }
+    }
+</script>
+
 </body>
 </html>
