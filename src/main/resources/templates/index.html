@@ -30,6 +30,18 @@
             line-height: 1.6;
         }
 
+        a.button {
+            display: inline-block;
+            margin-top: 18px;
+            margin-right: 8px;
+            padding: 11px 16px;
+            border-radius: 6px;
+            background: #1f6feb;
+            color: #ffffff;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
         button {
             margin-top: 18px;
             padding: 11px 16px;
@@ -48,6 +60,8 @@
     <p>
         <strong th:text="${loginUser.name}">사용자</strong>님, 로그인 테스트가 완료되었습니다.
     </p>
+
+    <a class="button" href="/category/manage">카테고리 관리</a>
 
     <form action="/user/logout" method="post">
         <button type="submit">로그아웃</button>
