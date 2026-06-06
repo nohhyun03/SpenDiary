@@ -2,9 +2,11 @@ package com.spendiary.spendiary.service;
 
 import com.spendiary.spendiary.dto.CategoryRequest;
 import com.spendiary.spendiary.entity.Category;
+import com.spendiary.spendiary.entity.Transaction;
 import com.spendiary.spendiary.entity.TransactionType;
 import com.spendiary.spendiary.entity.User;
 import com.spendiary.spendiary.repository.CategoryRepository;
+import com.spendiary.spendiary.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final TransactionRepository transactionRepository;
 
     @Transactional
     public void createDefaultCategory(User author) {
@@ -79,6 +82,14 @@ public class CategoryService {
         validateCategoryOwnership(category, author);
         validateNotDefaultCategory(category);
 
+        Category unclassifiedCategory = categoryRepository.findByAuthorAndNameAndType(author, "미분류", category.getType());
+
+        List<Transaction> transactions = transactionRepository.findByCategory(category);
+
+        for (Transaction transaction : transactions) {
+            transaction.setCategory(unclassifiedCategory);
+        }
+
         categoryRepository.delete(category);
     }
 
@@ -97,5 +108,4 @@ public class CategoryService {
             throw new IllegalArgumentException("이미 존재하는 카테고리입니다.");
         }
     }
-
 }

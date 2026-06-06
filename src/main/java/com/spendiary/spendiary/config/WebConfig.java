@@ -16,8 +16,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/user/signup",
                         "/user/check-id",
                         "/user/login",
-                        "/error",
-                        "/favicon.ico",
                         "/css/**",
                         "/js/**",
                         "/images/**"

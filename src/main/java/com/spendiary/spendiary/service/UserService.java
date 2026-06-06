@@ -3,6 +3,8 @@ package com.spendiary.spendiary.service;
 import com.spendiary.spendiary.dto.LoginRequest;
 import com.spendiary.spendiary.dto.SignupRequest;
 import com.spendiary.spendiary.entity.User;
+import com.spendiary.spendiary.repository.CategoryRepository;
+import com.spendiary.spendiary.repository.TransactionRepository;
 import com.spendiary.spendiary.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -29,6 +34,9 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        categoryService.createDefaultCategory(savedUser);
+
         return savedUser;
     }
 
@@ -49,6 +57,10 @@ public class UserService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow();
 
+        transactionRepository.deleteAllByAuthor(user);
+
+        categoryRepository.deleteAllByAuthor(user);
+
         userRepository.delete(user);
     }
 
@@ -62,5 +74,9 @@ public class UserService {
         if (userRepository.existsByLoginId(loginId)) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
+    }
+
+    public boolean isLoginIdDuplicated(String loginId) {
+        return userRepository.existsByLoginId(loginId);
     }
 }

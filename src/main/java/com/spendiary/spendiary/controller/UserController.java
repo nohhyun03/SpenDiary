@@ -6,6 +6,7 @@ import com.spendiary.spendiary.entity.User;
 import com.spendiary.spendiary.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -75,5 +76,12 @@ public class UserController {
         redirectAttributes.addFlashAttribute("successMessage", "회원 탈퇴가 완료되었습니다. 그동안 Spendiary를 이용해 주셔서 감사합니다.");
 
         return "redirect:/user/login";
+    }
+
+    @GetMapping("/check-id")
+    @ResponseBody
+    public ResponseEntity<Boolean> checkIdDuplicate(@RequestParam("loginId") String loginId) {
+        boolean isDuplicated = userService.isLoginIdDuplicated(loginId);
+        return ResponseEntity.ok(isDuplicated);
     }
 }

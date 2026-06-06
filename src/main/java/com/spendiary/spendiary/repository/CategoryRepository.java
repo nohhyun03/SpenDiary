@@ -11,4 +11,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByAuthorAndType(User author, TransactionType type);
 
     boolean existsByAuthorAndNameAndType(User author, String name, TransactionType type);
+
+    Category findByAuthorAndNameAndType(User author, String name, TransactionType type);
+
+    void deleteAllByAuthor(User author);
 }

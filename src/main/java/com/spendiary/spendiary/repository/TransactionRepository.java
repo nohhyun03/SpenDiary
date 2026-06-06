@@ -1,5 +1,6 @@
 package com.spendiary.spendiary.repository;
 
+import com.spendiary.spendiary.entity.Category;
 import com.spendiary.spendiary.entity.Transaction;
 import com.spendiary.spendiary.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByAuthorOrderByTransactionDateDesc(User author);
 
+    List<Transaction> findByCategory(Category category);
+
+    void deleteAllByAuthor(User author);
 }
