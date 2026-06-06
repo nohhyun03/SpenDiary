@@ -12,4 +12,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByAuthorAndTransactionDateBetweenOrderByTransactionDateDescIdDesc(User author, LocalDate startDate , LocalDate endDate);
 
+    List<Transaction> findByAuthorAndCategoryIdAndContentContainingOrAuthorAndCategoryIdAndMemoContainingOrderByTransactionDateDesc(
+            User author1, Long categoryId1, String content, User author2, Long categoryId2, String memo);
+
+    List<Transaction> findByAuthorAndCategoryIdOrderByTransactionDateDesc(User author, Long categoryId);
+
+    List<Transaction> findByAuthorAndContentContainingOrAuthorAndMemoContainingOrderByTransactionDateDesc(
+            User author1, String content, User author2, String memo);
+
+    List<Transaction> findByAuthorOrderByTransactionDateDesc(User author);
+
 }

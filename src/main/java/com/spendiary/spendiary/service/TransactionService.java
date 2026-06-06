@@ -59,6 +59,26 @@ public class TransactionService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 내역입니다."));
     }
 
+    public List<Transaction> searchTransactions(User loginUser, Long categoryId, String keyword) {
+
+        boolean hasCategory = (categoryId != null);
+        boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
+
+
+        if (hasCategory && hasKeyword) {
+            return transactionRepository.findByAuthorAndCategoryIdAndContentContainingOrAuthorAndCategoryIdAndMemoContainingOrderByTransactionDateDesc(
+                    loginUser, categoryId, keyword.trim(), loginUser, categoryId, keyword);
+        } else if (hasCategory) {
+            return transactionRepository.findByAuthorAndCategoryIdOrderByTransactionDateDesc(
+                    loginUser, categoryId);
+        } else if (hasKeyword) {
+            return transactionRepository.findByAuthorAndContentContainingOrAuthorAndMemoContainingOrderByTransactionDateDesc(
+                    loginUser, keyword.trim(), loginUser, keyword.trim());
+        } else {
+            return transactionRepository.findByAuthorOrderByTransactionDateDesc(loginUser);
+        }
+    }
+
     @Transactional
     public void updateTransaction(Long transactionId, User author, TransactionRequest request) {
         Transaction transaction = getTransactionById(transactionId);
